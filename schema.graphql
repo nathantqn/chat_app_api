@@ -1,0 +1,70 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+type Message {
+  id: ID!
+  text: String!
+  user: User!
+  room: Room!
+  createdAt: Time!
+}
+
+type User {
+  id: ID!
+  name: String!
+  rooms: [Room!]!
+  avatarURL: String!
+}
+
+type Room {
+  id: ID!
+  name: String!
+  messages: [Message!]!
+  users: [User!]!
+}
+
+input NewMessage {
+  text: String!
+  userId: ID!
+  roomId: ID!
+}
+
+input NewUser {
+  name: String!
+}
+
+input NewRoom {
+  userID: ID!
+  name: String!
+}
+
+input NewParticipation {
+  userID: ID!
+  roomID: ID!
+}
+
+input LoginInput {
+  name: String!
+}
+
+type Query {
+  messages: [Message!]!
+  user(id: ID!): User
+  room(id: ID!): Room
+  rooms: [Room!]!
+}
+
+type Mutation {
+  createMessage(input: NewMessage!): Message!
+  createUser(input: NewUser!): User!
+  createRoom(input: NewRoom!): Room!
+  joinRoom(input: NewParticipation!): Room!
+  login(input: LoginInput!): User!
+}
+
+type Subscription {
+  messageCreated(roomID: ID!, userID: ID!): Message!
+}
+
+scalar Time
