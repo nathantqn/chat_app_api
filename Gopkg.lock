@@ -2,10 +2,9 @@
 
 
 [[projects]]
-  digest = "1:fc2c146d78ca26c7a71add9e5fb0c6410387a5c65a5e15a90de256bcd4edb1a7"
+  digest = "1:5fb4005c9bdbe19b85e59c31ff68e7e96a2afd3d65ed3956c3d8c21bbafbdfda"
   name = "github.com/99designs/gqlgen"
   packages = [
-    ".",
     "api",
     "cmd",
     "codegen",
@@ -55,6 +54,38 @@
   version = "v0.5.3"
 
 [[projects]]
+  digest = "1:da6718abe4d47b1132d98bf3f9b18e302d537bf6daf02bd40804d9295a3f32bd"
+  name = "github.com/jinzhu/gorm"
+  packages = [
+    ".",
+    "dialects/postgres",
+  ]
+  pruneopts = "UT"
+  revision = "836fb2c19d84dac7b0272958dfb9af7cf0d0ade4"
+  version = "v1.9.10"
+
+[[projects]]
+  digest = "1:01ed62f8f4f574d8aff1d88caee113700a2b44c42351943fa73cc1808f736a50"
+  name = "github.com/jinzhu/inflection"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "f5c5f50e6090ae76a29240b61ae2a90dd810112e"
+  version = "v1.0.0"
+
+[[projects]]
+  digest = "1:0ead8e64fe356bd9221605e3ec40b4438509868018cbbbaaaff3ebae1b69b78b"
+  name = "github.com/lib/pq"
+  packages = [
+    ".",
+    "hstore",
+    "oid",
+    "scram",
+  ]
+  pruneopts = "UT"
+  revision = "3427c32cb71afc948325f299f040e53c1dd78979"
+  version = "v1.2.0"
+
+[[projects]]
   digest = "1:cf31692c14422fa27c83a05292eb5cbe0fb2775972e8f1f8446a71549bd8980b"
   name = "github.com/pkg/errors"
   packages = ["."]
@@ -63,23 +94,20 @@
   version = "v0.8.1"
 
 [[projects]]
+  digest = "1:c5dfe46811af7e2eff7c11fc84b6c841520338613c056f659f262d5a4fb42fa8"
+  name = "github.com/rs/cors"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "db0fe48135e83b5812a5a31be0eea66984b1b521"
+  version = "v1.7.0"
+
+[[projects]]
   digest = "1:ca4df663ad76879ad38dbd736493679cbb1aa596c6d479fd9fc5e959e5ceb4fb"
   name = "github.com/urfave/cli"
   packages = ["."]
   pruneopts = "UT"
   revision = "e6cf83ec39f6e1158ced1927d4ed14578fda8edb"
   version = "v1.21.0"
-
-[[projects]]
-  digest = "1:b2d8120b145f79e1a476946b24c29e30f8d861f3c5928708adaf4fdaba755379"
-  name = "github.com/vektah/dataloaden"
-  packages = [
-    ".",
-    "pkg/generator",
-  ]
-  pruneopts = "UT"
-  revision = "9d6b85cf15084a11c813eb0ee91c604b0e4a1de0"
-  version = "v0.3.0"
 
 [[projects]]
   digest = "1:b4e8aaca88f799355f4ac560bce4293fb85ff21003dd0d5741ca503f7a788e91"
@@ -129,6 +157,17 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  input-imports = ["github.com/99designs/gqlgen"]
+  input-imports = [
+    "github.com/99designs/gqlgen/cmd",
+    "github.com/99designs/gqlgen/graphql",
+    "github.com/99designs/gqlgen/graphql/introspection",
+    "github.com/99designs/gqlgen/handler",
+    "github.com/gorilla/websocket",
+    "github.com/jinzhu/gorm",
+    "github.com/jinzhu/gorm/dialects/postgres",
+    "github.com/rs/cors",
+    "github.com/vektah/gqlparser",
+    "github.com/vektah/gqlparser/ast",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1

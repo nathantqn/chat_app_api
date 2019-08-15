@@ -30,7 +30,7 @@
   unused-packages = true
 
 [metadata.heroku]
-  root-package = "github.com/nenjamin/chat_app"
+  root-package = "github.com/golang/nenjamin/chat_app"
   go-version = "1.12"
   install = [ "./..." ]
 

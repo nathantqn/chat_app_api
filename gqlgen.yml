@@ -4,7 +4,7 @@
 # for detailed .gqlgen.yml documentation.
 
 schema:
-- schema.graphql
+  - schema.graphql
 exec:
   filename: generated.go
 model:
@@ -13,3 +13,22 @@ resolver:
   filename: resolver.go
   type: Resolver
 autobind: []
+models:
+  ID: # The GraphQL type ID is backed by
+    model:
+      - github.com/99designs/gqlgen/graphql.IntID # An go integer
+      - github.com/99designs/gqlgen/graphql.ID # or a go string
+  Message:
+    model: github.com/golang/nenjamin/chat_app.Message
+  User:
+    model: github.com/golang/nenjamin/chat_app.User
+    fields:
+      rooms:
+        resolver: true
+  Room:
+    model: github.com/golang/nenjamin/chat_app.Room
+    fields:
+      messages:
+        resolver: true
+      users:
+        resolver: true
