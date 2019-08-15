@@ -28,3 +28,8 @@
 [prune]
   go-tests = true
   unused-packages = true
+
+[metadata.heroku]
+  root-package = "github.com/nenjamin/chat_app"
+  go-version = "1.12"
+  install = [ "./..." ]
