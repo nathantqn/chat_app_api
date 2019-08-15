@@ -3,6 +3,7 @@ package chat_app
 import (
 	"context"
 	"errors"
+	"os"
 	"strconv"
 	"sync"
 	"time"
@@ -17,9 +18,19 @@ func init() {
 	initDB()
 }
 
+const defaultDatabaseConfig = "user=nhattruong dbname=go_chat_app password=Sandworm1$ sslmode=disable"
+
+func getDatabaseConfig() string {
+	config := os.Getenv("DATABASE_URL")
+	if config == "" {
+		config = defaultDatabaseConfig
+	}
+	return config
+}
+
 func initDB() {
 	var err error
-	db, err = gorm.Open("postgres", "user=nhattruong dbname=go_chat_app password=Sandworm1$ sslmode=disable")
+	db, err = gorm.Open("postgres", getDatabaseConfig())
 	if err != nil {
 		panic("Cannot connect to database")
 	}
