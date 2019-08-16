@@ -80,6 +80,7 @@ type ComplexityRoot struct {
 
 	Subscription struct {
 		MessageCreated func(childComplexity int, roomID int, userID int) int
+		RoomAdded      func(childComplexity int, userID int) int
 	}
 
 	User struct {
@@ -113,6 +114,7 @@ type RoomResolver interface {
 }
 type SubscriptionResolver interface {
 	MessageCreated(ctx context.Context, roomID int, userID int) (<-chan *Message, error)
+	RoomAdded(ctx context.Context, userID int) (<-chan *Room, error)
 }
 type UserResolver interface {
 	Rooms(ctx context.Context, obj *User) ([]*Room, error)
@@ -306,6 +308,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Subscription.MessageCreated(childComplexity, args["roomID"].(int), args["userID"].(int)), true
 
+	case "Subscription.roomAdded":
+		if e.complexity.Subscription.RoomAdded == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_roomAdded_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.RoomAdded(childComplexity, args["userID"].(int)), true
+
 	case "User.avatarURL":
 		if e.complexity.User.AvatarURL == nil {
 			break
@@ -492,6 +506,7 @@ type Mutation {
 
 type Subscription {
   messageCreated(roomID: ID!, userID: ID!): Message!
+  roomAdded(userID: ID!): Room!
 }
 
 scalar Time
@@ -507,7 +522,7 @@ func (ec *executionContext) field_Mutation_createMessage_args(ctx context.Contex
 	args := map[string]interface{}{}
 	var arg0 NewMessage
 	if tmp, ok := rawArgs["input"]; ok {
-		arg0, err = ec.unmarshalNNewMessage2githubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐNewMessage(ctx, tmp)
+		arg0, err = ec.unmarshalNNewMessage2githubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐNewMessage(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -521,7 +536,7 @@ func (ec *executionContext) field_Mutation_createRoom_args(ctx context.Context, 
 	args := map[string]interface{}{}
 	var arg0 NewRoom
 	if tmp, ok := rawArgs["input"]; ok {
-		arg0, err = ec.unmarshalNNewRoom2githubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐNewRoom(ctx, tmp)
+		arg0, err = ec.unmarshalNNewRoom2githubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐNewRoom(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -535,7 +550,7 @@ func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, 
 	args := map[string]interface{}{}
 	var arg0 NewUser
 	if tmp, ok := rawArgs["input"]; ok {
-		arg0, err = ec.unmarshalNNewUser2githubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐNewUser(ctx, tmp)
+		arg0, err = ec.unmarshalNNewUser2githubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐNewUser(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -549,7 +564,7 @@ func (ec *executionContext) field_Mutation_joinRoom_args(ctx context.Context, ra
 	args := map[string]interface{}{}
 	var arg0 NewParticipation
 	if tmp, ok := rawArgs["input"]; ok {
-		arg0, err = ec.unmarshalNNewParticipation2githubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐNewParticipation(ctx, tmp)
+		arg0, err = ec.unmarshalNNewParticipation2githubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐNewParticipation(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -563,7 +578,7 @@ func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawAr
 	args := map[string]interface{}{}
 	var arg0 LoginInput
 	if tmp, ok := rawArgs["input"]; ok {
-		arg0, err = ec.unmarshalNLoginInput2githubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐLoginInput(ctx, tmp)
+		arg0, err = ec.unmarshalNLoginInput2githubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐLoginInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -633,6 +648,20 @@ func (ec *executionContext) field_Subscription_messageCreated_args(ctx context.C
 		}
 	}
 	args["userID"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Subscription_roomAdded_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["userID"]; ok {
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["userID"] = arg0
 	return args, nil
 }
 
@@ -780,7 +809,7 @@ func (ec *executionContext) _Message_user(ctx context.Context, field graphql.Col
 	res := resTmp.(*User)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNUser2ᚖgithubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Message_room(ctx context.Context, field graphql.CollectedField, obj *Message) (ret graphql.Marshaler) {
@@ -817,7 +846,7 @@ func (ec *executionContext) _Message_room(ctx context.Context, field graphql.Col
 	res := resTmp.(*Room)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNRoom2ᚖgithubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐRoom(ctx, field.Selections, res)
+	return ec.marshalNRoom2ᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐRoom(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Message_createdAt(ctx context.Context, field graphql.CollectedField, obj *Message) (ret graphql.Marshaler) {
@@ -898,7 +927,7 @@ func (ec *executionContext) _Mutation_createMessage(ctx context.Context, field g
 	res := resTmp.(*Message)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNMessage2ᚖgithubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐMessage(ctx, field.Selections, res)
+	return ec.marshalNMessage2ᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐMessage(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_createUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -942,7 +971,7 @@ func (ec *executionContext) _Mutation_createUser(ctx context.Context, field grap
 	res := resTmp.(*User)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNUser2ᚖgithubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_createRoom(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -986,7 +1015,7 @@ func (ec *executionContext) _Mutation_createRoom(ctx context.Context, field grap
 	res := resTmp.(*Room)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNRoom2ᚖgithubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐRoom(ctx, field.Selections, res)
+	return ec.marshalNRoom2ᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐRoom(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_joinRoom(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1030,7 +1059,7 @@ func (ec *executionContext) _Mutation_joinRoom(ctx context.Context, field graphq
 	res := resTmp.(*Room)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNRoom2ᚖgithubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐRoom(ctx, field.Selections, res)
+	return ec.marshalNRoom2ᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐRoom(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1074,7 +1103,7 @@ func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.C
 	res := resTmp.(*User)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNUser2ᚖgithubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_messages(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1111,7 +1140,7 @@ func (ec *executionContext) _Query_messages(ctx context.Context, field graphql.C
 	res := resTmp.([]*Message)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNMessage2ᚕᚖgithubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐMessage(ctx, field.Selections, res)
+	return ec.marshalNMessage2ᚕᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐMessage(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_user(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1152,7 +1181,7 @@ func (ec *executionContext) _Query_user(ctx context.Context, field graphql.Colle
 	res := resTmp.(*User)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOUser2ᚖgithubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐUser(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_room(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1193,7 +1222,7 @@ func (ec *executionContext) _Query_room(ctx context.Context, field graphql.Colle
 	res := resTmp.(*Room)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalORoom2ᚖgithubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐRoom(ctx, field.Selections, res)
+	return ec.marshalORoom2ᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐRoom(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_rooms(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1230,7 +1259,7 @@ func (ec *executionContext) _Query_rooms(ctx context.Context, field graphql.Coll
 	res := resTmp.([]*Room)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNRoom2ᚕᚖgithubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐRoom(ctx, field.Selections, res)
+	return ec.marshalNRoom2ᚕᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐRoom(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1271,7 +1300,7 @@ func (ec *executionContext) _Query___type(ctx context.Context, field graphql.Col
 	res := resTmp.(*introspection.Type)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalO__Type2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, field.Selections, res)
+	return ec.marshalO__Type2ᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1305,7 +1334,7 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	res := resTmp.(*introspection.Schema)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
+	return ec.marshalO__Schema2ᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Room_id(ctx context.Context, field graphql.CollectedField, obj *Room) (ret graphql.Marshaler) {
@@ -1416,7 +1445,7 @@ func (ec *executionContext) _Room_messages(ctx context.Context, field graphql.Co
 	res := resTmp.([]*Message)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNMessage2ᚕᚖgithubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐMessage(ctx, field.Selections, res)
+	return ec.marshalNMessage2ᚕᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐMessage(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Room_users(ctx context.Context, field graphql.CollectedField, obj *Room) (ret graphql.Marshaler) {
@@ -1453,7 +1482,7 @@ func (ec *executionContext) _Room_users(ctx context.Context, field graphql.Colle
 	res := resTmp.([]*User)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNUser2ᚕᚖgithubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚕᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Subscription_messageCreated(ctx context.Context, field graphql.CollectedField) func() graphql.Marshaler {
@@ -1484,7 +1513,41 @@ func (ec *executionContext) _Subscription_messageCreated(ctx context.Context, fi
 			w.Write([]byte{'{'})
 			graphql.MarshalString(field.Alias).MarshalGQL(w)
 			w.Write([]byte{':'})
-			ec.marshalNMessage2ᚖgithubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐMessage(ctx, field.Selections, res).MarshalGQL(w)
+			ec.marshalNMessage2ᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐMessage(ctx, field.Selections, res).MarshalGQL(w)
+			w.Write([]byte{'}'})
+		})
+	}
+}
+
+func (ec *executionContext) _Subscription_roomAdded(ctx context.Context, field graphql.CollectedField) func() graphql.Marshaler {
+	ctx = graphql.WithResolverContext(ctx, &graphql.ResolverContext{
+		Field: field,
+		Args:  nil,
+	})
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Subscription_roomAdded_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	// FIXME: subscriptions are missing request middleware stack https://github.com/99designs/gqlgen/issues/259
+	//          and Tracer stack
+	rctx := ctx
+	results, err := ec.resolvers.Subscription().RoomAdded(rctx, args["userID"].(int))
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	return func() graphql.Marshaler {
+		res, ok := <-results
+		if !ok {
+			return nil
+		}
+		return graphql.WriterFunc(func(w io.Writer) {
+			w.Write([]byte{'{'})
+			graphql.MarshalString(field.Alias).MarshalGQL(w)
+			w.Write([]byte{':'})
+			ec.marshalNRoom2ᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐRoom(ctx, field.Selections, res).MarshalGQL(w)
 			w.Write([]byte{'}'})
 		})
 	}
@@ -1598,7 +1661,7 @@ func (ec *executionContext) _User_rooms(ctx context.Context, field graphql.Colle
 	res := resTmp.([]*Room)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNRoom2ᚕᚖgithubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐRoom(ctx, field.Selections, res)
+	return ec.marshalNRoom2ᚕᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐRoom(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _User_avatarURL(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
@@ -1780,7 +1843,7 @@ func (ec *executionContext) ___Directive_args(ctx context.Context, field graphql
 	res := resTmp.([]introspection.InputValue)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalN__InputValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐInputValue(ctx, field.Selections, res)
+	return ec.marshalN__InputValue2ᚕgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐInputValue(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___EnumValue_name(ctx context.Context, field graphql.CollectedField, obj *introspection.EnumValue) (ret graphql.Marshaler) {
@@ -2030,7 +2093,7 @@ func (ec *executionContext) ___Field_args(ctx context.Context, field graphql.Col
 	res := resTmp.([]introspection.InputValue)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalN__InputValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐInputValue(ctx, field.Selections, res)
+	return ec.marshalN__InputValue2ᚕgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐInputValue(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Field_type(ctx context.Context, field graphql.CollectedField, obj *introspection.Field) (ret graphql.Marshaler) {
@@ -2067,7 +2130,7 @@ func (ec *executionContext) ___Field_type(ctx context.Context, field graphql.Col
 	res := resTmp.(*introspection.Type)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalN__Type2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, field.Selections, res)
+	return ec.marshalN__Type2ᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Field_isDeprecated(ctx context.Context, field graphql.CollectedField, obj *introspection.Field) (ret graphql.Marshaler) {
@@ -2246,7 +2309,7 @@ func (ec *executionContext) ___InputValue_type(ctx context.Context, field graphq
 	res := resTmp.(*introspection.Type)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalN__Type2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, field.Selections, res)
+	return ec.marshalN__Type2ᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___InputValue_defaultValue(ctx context.Context, field graphql.CollectedField, obj *introspection.InputValue) (ret graphql.Marshaler) {
@@ -2317,7 +2380,7 @@ func (ec *executionContext) ___Schema_types(ctx context.Context, field graphql.C
 	res := resTmp.([]introspection.Type)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalN__Type2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, field.Selections, res)
+	return ec.marshalN__Type2ᚕgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Schema_queryType(ctx context.Context, field graphql.CollectedField, obj *introspection.Schema) (ret graphql.Marshaler) {
@@ -2354,7 +2417,7 @@ func (ec *executionContext) ___Schema_queryType(ctx context.Context, field graph
 	res := resTmp.(*introspection.Type)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalN__Type2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, field.Selections, res)
+	return ec.marshalN__Type2ᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Schema_mutationType(ctx context.Context, field graphql.CollectedField, obj *introspection.Schema) (ret graphql.Marshaler) {
@@ -2388,7 +2451,7 @@ func (ec *executionContext) ___Schema_mutationType(ctx context.Context, field gr
 	res := resTmp.(*introspection.Type)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalO__Type2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, field.Selections, res)
+	return ec.marshalO__Type2ᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Schema_subscriptionType(ctx context.Context, field graphql.CollectedField, obj *introspection.Schema) (ret graphql.Marshaler) {
@@ -2422,7 +2485,7 @@ func (ec *executionContext) ___Schema_subscriptionType(ctx context.Context, fiel
 	res := resTmp.(*introspection.Type)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalO__Type2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, field.Selections, res)
+	return ec.marshalO__Type2ᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Schema_directives(ctx context.Context, field graphql.CollectedField, obj *introspection.Schema) (ret graphql.Marshaler) {
@@ -2459,7 +2522,7 @@ func (ec *executionContext) ___Schema_directives(ctx context.Context, field grap
 	res := resTmp.([]introspection.Directive)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalN__Directive2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx, field.Selections, res)
+	return ec.marshalN__Directive2ᚕgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Type_kind(ctx context.Context, field graphql.CollectedField, obj *introspection.Type) (ret graphql.Marshaler) {
@@ -2605,7 +2668,7 @@ func (ec *executionContext) ___Type_fields(ctx context.Context, field graphql.Co
 	res := resTmp.([]introspection.Field)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalO__Field2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐField(ctx, field.Selections, res)
+	return ec.marshalO__Field2ᚕgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐField(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Type_interfaces(ctx context.Context, field graphql.CollectedField, obj *introspection.Type) (ret graphql.Marshaler) {
@@ -2639,7 +2702,7 @@ func (ec *executionContext) ___Type_interfaces(ctx context.Context, field graphq
 	res := resTmp.([]introspection.Type)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalO__Type2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, field.Selections, res)
+	return ec.marshalO__Type2ᚕgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Type_possibleTypes(ctx context.Context, field graphql.CollectedField, obj *introspection.Type) (ret graphql.Marshaler) {
@@ -2673,7 +2736,7 @@ func (ec *executionContext) ___Type_possibleTypes(ctx context.Context, field gra
 	res := resTmp.([]introspection.Type)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalO__Type2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, field.Selections, res)
+	return ec.marshalO__Type2ᚕgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Type_enumValues(ctx context.Context, field graphql.CollectedField, obj *introspection.Type) (ret graphql.Marshaler) {
@@ -2714,7 +2777,7 @@ func (ec *executionContext) ___Type_enumValues(ctx context.Context, field graphq
 	res := resTmp.([]introspection.EnumValue)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValue(ctx, field.Selections, res)
+	return ec.marshalO__EnumValue2ᚕgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValue(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Type_inputFields(ctx context.Context, field graphql.CollectedField, obj *introspection.Type) (ret graphql.Marshaler) {
@@ -2748,7 +2811,7 @@ func (ec *executionContext) ___Type_inputFields(ctx context.Context, field graph
 	res := resTmp.([]introspection.InputValue)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalO__InputValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐInputValue(ctx, field.Selections, res)
+	return ec.marshalO__InputValue2ᚕgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐInputValue(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.CollectedField, obj *introspection.Type) (ret graphql.Marshaler) {
@@ -2782,7 +2845,7 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 	res := resTmp.(*introspection.Type)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalO__Type2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, field.Selections, res)
+	return ec.marshalO__Type2ᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, field.Selections, res)
 }
 
 // endregion **************************** field.gotpl *****************************
@@ -3182,6 +3245,8 @@ func (ec *executionContext) _Subscription(ctx context.Context, sel ast.Selection
 	switch fields[0].Name {
 	case "messageCreated":
 		return ec._Subscription_messageCreated(ctx, fields[0])
+	case "roomAdded":
+		return ec._Subscription_roomAdded(ctx, fields[0])
 	default:
 		panic("unknown field " + strconv.Quote(fields[0].Name))
 	}
@@ -3511,15 +3576,15 @@ func (ec *executionContext) marshalNID2int(ctx context.Context, sel ast.Selectio
 	return res
 }
 
-func (ec *executionContext) unmarshalNLoginInput2githubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐLoginInput(ctx context.Context, v interface{}) (LoginInput, error) {
+func (ec *executionContext) unmarshalNLoginInput2githubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐLoginInput(ctx context.Context, v interface{}) (LoginInput, error) {
 	return ec.unmarshalInputLoginInput(ctx, v)
 }
 
-func (ec *executionContext) marshalNMessage2githubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐMessage(ctx context.Context, sel ast.SelectionSet, v Message) graphql.Marshaler {
+func (ec *executionContext) marshalNMessage2githubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐMessage(ctx context.Context, sel ast.SelectionSet, v Message) graphql.Marshaler {
 	return ec._Message(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNMessage2ᚕᚖgithubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐMessage(ctx context.Context, sel ast.SelectionSet, v []*Message) graphql.Marshaler {
+func (ec *executionContext) marshalNMessage2ᚕᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐMessage(ctx context.Context, sel ast.SelectionSet, v []*Message) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -3543,7 +3608,7 @@ func (ec *executionContext) marshalNMessage2ᚕᚖgithubᚗcomᚋnenjamin2405ᚋ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNMessage2ᚖgithubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐMessage(ctx, sel, v[i])
+			ret[i] = ec.marshalNMessage2ᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐMessage(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3556,7 +3621,7 @@ func (ec *executionContext) marshalNMessage2ᚕᚖgithubᚗcomᚋnenjamin2405ᚋ
 	return ret
 }
 
-func (ec *executionContext) marshalNMessage2ᚖgithubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐMessage(ctx context.Context, sel ast.SelectionSet, v *Message) graphql.Marshaler {
+func (ec *executionContext) marshalNMessage2ᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐMessage(ctx context.Context, sel ast.SelectionSet, v *Message) graphql.Marshaler {
 	if v == nil {
 		if !ec.HasError(graphql.GetResolverContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -3566,27 +3631,27 @@ func (ec *executionContext) marshalNMessage2ᚖgithubᚗcomᚋnenjamin2405ᚋgo_
 	return ec._Message(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNNewMessage2githubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐNewMessage(ctx context.Context, v interface{}) (NewMessage, error) {
+func (ec *executionContext) unmarshalNNewMessage2githubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐNewMessage(ctx context.Context, v interface{}) (NewMessage, error) {
 	return ec.unmarshalInputNewMessage(ctx, v)
 }
 
-func (ec *executionContext) unmarshalNNewParticipation2githubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐNewParticipation(ctx context.Context, v interface{}) (NewParticipation, error) {
+func (ec *executionContext) unmarshalNNewParticipation2githubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐNewParticipation(ctx context.Context, v interface{}) (NewParticipation, error) {
 	return ec.unmarshalInputNewParticipation(ctx, v)
 }
 
-func (ec *executionContext) unmarshalNNewRoom2githubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐNewRoom(ctx context.Context, v interface{}) (NewRoom, error) {
+func (ec *executionContext) unmarshalNNewRoom2githubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐNewRoom(ctx context.Context, v interface{}) (NewRoom, error) {
 	return ec.unmarshalInputNewRoom(ctx, v)
 }
 
-func (ec *executionContext) unmarshalNNewUser2githubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐNewUser(ctx context.Context, v interface{}) (NewUser, error) {
+func (ec *executionContext) unmarshalNNewUser2githubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐNewUser(ctx context.Context, v interface{}) (NewUser, error) {
 	return ec.unmarshalInputNewUser(ctx, v)
 }
 
-func (ec *executionContext) marshalNRoom2githubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐRoom(ctx context.Context, sel ast.SelectionSet, v Room) graphql.Marshaler {
+func (ec *executionContext) marshalNRoom2githubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐRoom(ctx context.Context, sel ast.SelectionSet, v Room) graphql.Marshaler {
 	return ec._Room(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNRoom2ᚕᚖgithubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐRoom(ctx context.Context, sel ast.SelectionSet, v []*Room) graphql.Marshaler {
+func (ec *executionContext) marshalNRoom2ᚕᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐRoom(ctx context.Context, sel ast.SelectionSet, v []*Room) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -3610,7 +3675,7 @@ func (ec *executionContext) marshalNRoom2ᚕᚖgithubᚗcomᚋnenjamin2405ᚋgo_
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNRoom2ᚖgithubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐRoom(ctx, sel, v[i])
+			ret[i] = ec.marshalNRoom2ᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐRoom(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3623,7 +3688,7 @@ func (ec *executionContext) marshalNRoom2ᚕᚖgithubᚗcomᚋnenjamin2405ᚋgo_
 	return ret
 }
 
-func (ec *executionContext) marshalNRoom2ᚖgithubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐRoom(ctx context.Context, sel ast.SelectionSet, v *Room) graphql.Marshaler {
+func (ec *executionContext) marshalNRoom2ᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐRoom(ctx context.Context, sel ast.SelectionSet, v *Room) graphql.Marshaler {
 	if v == nil {
 		if !ec.HasError(graphql.GetResolverContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -3661,11 +3726,11 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 	return res
 }
 
-func (ec *executionContext) marshalNUser2githubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐUser(ctx context.Context, sel ast.SelectionSet, v User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2githubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐUser(ctx context.Context, sel ast.SelectionSet, v User) graphql.Marshaler {
 	return ec._User(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐUser(ctx context.Context, sel ast.SelectionSet, v []*User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐUser(ctx context.Context, sel ast.SelectionSet, v []*User) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -3689,7 +3754,7 @@ func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋnenjamin2405ᚋgo_
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNUser2ᚖgithubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐUser(ctx, sel, v[i])
+			ret[i] = ec.marshalNUser2ᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐUser(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3702,7 +3767,7 @@ func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋnenjamin2405ᚋgo_
 	return ret
 }
 
-func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐUser(ctx context.Context, sel ast.SelectionSet, v *User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐUser(ctx context.Context, sel ast.SelectionSet, v *User) graphql.Marshaler {
 	if v == nil {
 		if !ec.HasError(graphql.GetResolverContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -3712,11 +3777,11 @@ func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋnenjamin2405ᚋgo_cha
 	return ec._User(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
+func (ec *executionContext) marshalN__Directive2githubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
 	return ec.___Directive(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalN__Directive2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v []introspection.Directive) graphql.Marshaler {
+func (ec *executionContext) marshalN__Directive2ᚕgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v []introspection.Directive) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -3740,7 +3805,7 @@ func (ec *executionContext) marshalN__Directive2ᚕgithubᚗcomᚋ99designsᚋgq
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx, sel, v[i])
+			ret[i] = ec.marshalN__Directive2githubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3824,19 +3889,19 @@ func (ec *executionContext) marshalN__DirectiveLocation2ᚕstring(ctx context.Co
 	return ret
 }
 
-func (ec *executionContext) marshalN__EnumValue2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValue(ctx context.Context, sel ast.SelectionSet, v introspection.EnumValue) graphql.Marshaler {
+func (ec *executionContext) marshalN__EnumValue2githubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValue(ctx context.Context, sel ast.SelectionSet, v introspection.EnumValue) graphql.Marshaler {
 	return ec.___EnumValue(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalN__Field2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐField(ctx context.Context, sel ast.SelectionSet, v introspection.Field) graphql.Marshaler {
+func (ec *executionContext) marshalN__Field2githubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐField(ctx context.Context, sel ast.SelectionSet, v introspection.Field) graphql.Marshaler {
 	return ec.___Field(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalN__InputValue2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐInputValue(ctx context.Context, sel ast.SelectionSet, v introspection.InputValue) graphql.Marshaler {
+func (ec *executionContext) marshalN__InputValue2githubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐInputValue(ctx context.Context, sel ast.SelectionSet, v introspection.InputValue) graphql.Marshaler {
 	return ec.___InputValue(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalN__InputValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐInputValue(ctx context.Context, sel ast.SelectionSet, v []introspection.InputValue) graphql.Marshaler {
+func (ec *executionContext) marshalN__InputValue2ᚕgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐInputValue(ctx context.Context, sel ast.SelectionSet, v []introspection.InputValue) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -3860,7 +3925,7 @@ func (ec *executionContext) marshalN__InputValue2ᚕgithubᚗcomᚋ99designsᚋg
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalN__InputValue2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐInputValue(ctx, sel, v[i])
+			ret[i] = ec.marshalN__InputValue2githubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐInputValue(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3873,11 +3938,11 @@ func (ec *executionContext) marshalN__InputValue2ᚕgithubᚗcomᚋ99designsᚋg
 	return ret
 }
 
-func (ec *executionContext) marshalN__Type2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx context.Context, sel ast.SelectionSet, v introspection.Type) graphql.Marshaler {
+func (ec *executionContext) marshalN__Type2githubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx context.Context, sel ast.SelectionSet, v introspection.Type) graphql.Marshaler {
 	return ec.___Type(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalN__Type2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx context.Context, sel ast.SelectionSet, v []introspection.Type) graphql.Marshaler {
+func (ec *executionContext) marshalN__Type2ᚕgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx context.Context, sel ast.SelectionSet, v []introspection.Type) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -3901,7 +3966,7 @@ func (ec *executionContext) marshalN__Type2ᚕgithubᚗcomᚋ99designsᚋgqlgen�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalN__Type2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, sel, v[i])
+			ret[i] = ec.marshalN__Type2githubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3914,7 +3979,7 @@ func (ec *executionContext) marshalN__Type2ᚕgithubᚗcomᚋ99designsᚋgqlgen�
 	return ret
 }
 
-func (ec *executionContext) marshalN__Type2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx context.Context, sel ast.SelectionSet, v *introspection.Type) graphql.Marshaler {
+func (ec *executionContext) marshalN__Type2ᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx context.Context, sel ast.SelectionSet, v *introspection.Type) graphql.Marshaler {
 	if v == nil {
 		if !ec.HasError(graphql.GetResolverContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -3961,11 +4026,11 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return ec.marshalOBoolean2bool(ctx, sel, *v)
 }
 
-func (ec *executionContext) marshalORoom2githubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐRoom(ctx context.Context, sel ast.SelectionSet, v Room) graphql.Marshaler {
+func (ec *executionContext) marshalORoom2githubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐRoom(ctx context.Context, sel ast.SelectionSet, v Room) graphql.Marshaler {
 	return ec._Room(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalORoom2ᚖgithubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐRoom(ctx context.Context, sel ast.SelectionSet, v *Room) graphql.Marshaler {
+func (ec *executionContext) marshalORoom2ᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐRoom(ctx context.Context, sel ast.SelectionSet, v *Room) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -3995,18 +4060,18 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	return ec.marshalOString2string(ctx, sel, *v)
 }
 
-func (ec *executionContext) marshalOUser2githubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐUser(ctx context.Context, sel ast.SelectionSet, v User) graphql.Marshaler {
+func (ec *executionContext) marshalOUser2githubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐUser(ctx context.Context, sel ast.SelectionSet, v User) graphql.Marshaler {
 	return ec._User(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋnenjamin2405ᚋgo_chat_appᚐUser(ctx context.Context, sel ast.SelectionSet, v *User) graphql.Marshaler {
+func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚐUser(ctx context.Context, sel ast.SelectionSet, v *User) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValue(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {
+func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValue(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -4033,7 +4098,7 @@ func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgq
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalN__EnumValue2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValue(ctx, sel, v[i])
+			ret[i] = ec.marshalN__EnumValue2githubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValue(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -4046,7 +4111,7 @@ func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgq
 	return ret
 }
 
-func (ec *executionContext) marshalO__Field2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐField(ctx context.Context, sel ast.SelectionSet, v []introspection.Field) graphql.Marshaler {
+func (ec *executionContext) marshalO__Field2ᚕgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐField(ctx context.Context, sel ast.SelectionSet, v []introspection.Field) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -4073,7 +4138,7 @@ func (ec *executionContext) marshalO__Field2ᚕgithubᚗcomᚋ99designsᚋgqlgen
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalN__Field2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐField(ctx, sel, v[i])
+			ret[i] = ec.marshalN__Field2githubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐField(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -4086,7 +4151,7 @@ func (ec *executionContext) marshalO__Field2ᚕgithubᚗcomᚋ99designsᚋgqlgen
 	return ret
 }
 
-func (ec *executionContext) marshalO__InputValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐInputValue(ctx context.Context, sel ast.SelectionSet, v []introspection.InputValue) graphql.Marshaler {
+func (ec *executionContext) marshalO__InputValue2ᚕgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐInputValue(ctx context.Context, sel ast.SelectionSet, v []introspection.InputValue) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -4113,7 +4178,7 @@ func (ec *executionContext) marshalO__InputValue2ᚕgithubᚗcomᚋ99designsᚋg
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalN__InputValue2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐInputValue(ctx, sel, v[i])
+			ret[i] = ec.marshalN__InputValue2githubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐInputValue(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -4126,22 +4191,22 @@ func (ec *executionContext) marshalO__InputValue2ᚕgithubᚗcomᚋ99designsᚋg
 	return ret
 }
 
-func (ec *executionContext) marshalO__Schema2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx context.Context, sel ast.SelectionSet, v introspection.Schema) graphql.Marshaler {
+func (ec *executionContext) marshalO__Schema2githubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx context.Context, sel ast.SelectionSet, v introspection.Schema) graphql.Marshaler {
 	return ec.___Schema(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx context.Context, sel ast.SelectionSet, v *introspection.Schema) graphql.Marshaler {
+func (ec *executionContext) marshalO__Schema2ᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx context.Context, sel ast.SelectionSet, v *introspection.Schema) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec.___Schema(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalO__Type2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx context.Context, sel ast.SelectionSet, v introspection.Type) graphql.Marshaler {
+func (ec *executionContext) marshalO__Type2githubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx context.Context, sel ast.SelectionSet, v introspection.Type) graphql.Marshaler {
 	return ec.___Type(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalO__Type2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx context.Context, sel ast.SelectionSet, v []introspection.Type) graphql.Marshaler {
+func (ec *executionContext) marshalO__Type2ᚕgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx context.Context, sel ast.SelectionSet, v []introspection.Type) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -4168,7 +4233,7 @@ func (ec *executionContext) marshalO__Type2ᚕgithubᚗcomᚋ99designsᚋgqlgen�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalN__Type2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, sel, v[i])
+			ret[i] = ec.marshalN__Type2githubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -4181,7 +4246,7 @@ func (ec *executionContext) marshalO__Type2ᚕgithubᚗcomᚋ99designsᚋgqlgen�
 	return ret
 }
 
-func (ec *executionContext) marshalO__Type2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx context.Context, sel ast.SelectionSet, v *introspection.Type) graphql.Marshaler {
+func (ec *executionContext) marshalO__Type2ᚖgithubᚗcomᚋgolangᚋnenjaminᚋchat_appᚋvendorᚋgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx context.Context, sel ast.SelectionSet, v *introspection.Type) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}

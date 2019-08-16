@@ -65,6 +65,7 @@ type Mutation {
 
 type Subscription {
   messageCreated(roomID: ID!, userID: ID!): Message!
+  roomAdded(userID: ID!): Room!
 }
 
 scalar Time

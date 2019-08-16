@@ -3,6 +3,7 @@ package chat_app
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"strconv"
 	"sync"
@@ -42,13 +43,16 @@ func initDB() {
 }
 
 type UserChannel chan *Message
+type RoomAddedChannel chan *Room
 
 type UserChannels map[int]UserChannel
 type ChatRooms map[int]UserChannels
+type RoomAddedChannels map[int]RoomAddedChannel
 
 type Resolver struct {
-	mu        sync.Mutex
-	ChatRooms ChatRooms
+	mu                sync.Mutex
+	ChatRooms         ChatRooms
+	RoomAddedChannels RoomAddedChannels
 }
 
 func (r *Resolver) Message() MessageResolver {
@@ -149,6 +153,14 @@ func (r *mutationResolver) CreateRoom(ctx context.Context, input NewRoom) (*Room
 	room := &Room{Name: input.Name}
 	db.Create(room)
 	r.JoinRoom(ctx, NewParticipation{UserID: input.UserID, RoomID: room.ID})
+	r.mu.Lock()
+	fmt.Println(r.RoomAddedChannels)
+	if len(r.RoomAddedChannels) != 0 {
+		for roomAddedChannel := range r.RoomAddedChannels {
+			r.RoomAddedChannels[roomAddedChannel] <- room
+		}
+	}
+	r.mu.Unlock()
 	return room, nil
 }
 
@@ -218,6 +230,25 @@ func (r *subscriptionResolver) MessageCreated(ctx context.Context, roomID int, u
 		r.ChatRooms[roomID] = UserChannels{userID: events}
 	} else {
 		r.ChatRooms[roomID][userID] = events
+	}
+	r.mu.Unlock()
+	return events, nil
+}
+
+func (r *subscriptionResolver) RoomAdded(ctx context.Context, userID int) (<-chan *Room, error) {
+	events := make(chan *Room, 1)
+	go func() {
+		<-ctx.Done()
+		r.mu.Lock()
+		delete(r.RoomAddedChannels, userID)
+		r.mu.Unlock()
+	}()
+
+	r.mu.Lock()
+	if len(r.RoomAddedChannels) == 0 {
+		r.RoomAddedChannels = RoomAddedChannels{userID: events}
+	} else {
+		r.RoomAddedChannels[userID] = events
 	}
 	r.mu.Unlock()
 	return events, nil
